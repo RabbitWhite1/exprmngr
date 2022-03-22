@@ -1,0 +1,16 @@
+columns:
+  - name: num_nodes
+    type: int
+  - name: num_process
+    type: int
+  - name: batch_size
+    type: int
+    comment: number of embedding tables per (local-)rank
+  - name: version
+    type: text
+  - name: dataset_type
+    type: text
+  - name: autoplan
+    type: int
+    default: 0
+    comment: boolean value
