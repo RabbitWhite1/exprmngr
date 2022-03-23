@@ -111,7 +111,7 @@ class ExprMngr:
 
     def get_local_log_path(self, conf_id: int, rank: int = None, world_size: int = None):
         # TODO: let the format be configurable in etc, or remove this
-        if rank and world_size:
+        if rank is not None and world_size is not None:
             return osp.join(self.local_logs_dirname, f'log{conf_id}--RANK{world_size}_{rank}.csv')
         else:
             return osp.join(self.local_logs_dirname, f'{conf_id}.log')
