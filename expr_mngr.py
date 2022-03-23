@@ -98,7 +98,7 @@ class ExprMngr:
                            [kwargs[column["name"]] for column in self.columns])
             conn.commit()
         except sqlite3.IntegrityError:
-            ...
+            conn.rollback()
             
         # fetch id
         cursor.execute(f'SELECT id FROM log WHERE {" AND ".join([column["name"] + "=?" for column in self.columns])}',
@@ -106,10 +106,15 @@ class ExprMngr:
         id_list = cursor.fetchall()
         assert len(id_list) == 1 or print(f'{id_list}')
         conf_id = id_list[0][0]
+        conn.commit()
         return conf_id
 
-    def get_local_log_path(self, conf_id: int, rank: int, world_size: int):
-        return osp.join(self.local_logs_dirname, f'log{conf_id}--RANK{world_size}_{rank}.csv')
+    def get_local_log_path(self, conf_id: int, rank: int = None, world_size: int = None):
+        # TODO: let the format be configurable in etc, or remove this
+        if rank and world_size:
+            return osp.join(self.local_logs_dirname, f'log{conf_id}--RANK{world_size}_{rank}.csv')
+        else:
+            return osp.join(self.local_logs_dirname, f'{conf_id}.log')
 
     def generate_expr_config(self, **kwargs):
         assert 'num_nodes' in kwargs and 'num_process' in kwargs

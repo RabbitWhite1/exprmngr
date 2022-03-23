@@ -58,7 +58,14 @@ class TableMngr:
 
     def get_table_info(self, cursor: sqlite3.Cursor):
         cursor.execute('PRAGMA table_info(log)')
-        return cursor.fetchall()
+        return self._format_table_info(cursor.fetchall())
+
+    def _format_table_info(self, table_info):
+        for i in range(len(table_info)):
+            column = list(table_info[i])
+            column[2] = column[2].upper()
+            table_info[i] = tuple(column)
+        return table_info
 
     def show_create_table(self, conn: sqlite3.Connection):
         rich.print(self.get_table_info(conn.cursor()))
