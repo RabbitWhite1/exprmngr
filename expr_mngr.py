@@ -64,14 +64,26 @@ class ExprMngr:
             for key in config['paths'][place].keys():
                 config['paths'][place][key] = osp.abspath(config['paths'][place][key])
             if 'logs_dirname' in config['paths'][place]:
-                config['paths'][place]['logs_dirname'] = osp.abspath(config['paths'][place]['logs_dirname'])
+                config['paths'][place]['logs_dirname'] = osp.join(
+                    config['paths'][place]['working_dirname'], 
+                    config['paths'][place]['logs_dirname']
+                )
             else:
                 config['paths'][place]['logs_dirname'] = osp.join(config['paths'][place]['working_dirname'], 'logs')
             if 'exec_configs_dirname' in config['paths'][place]:
-                config['paths'][place]['exec_configs_dirname'] = osp.abspath(config['paths'][place]['exec_configs_dirname'])
+                config['paths'][place]['exec_configs_dirname'] = osp.join(
+                    config['paths'][place]['working_dirname'], 
+                    config['paths'][place]['exec_configs_dirname']
+                )
             else:
                 config['paths'][place]['exec_configs_dirname'] = osp.join(config['paths'][place]['working_dirname'], 'exec_configs')
-    
+            for dirname in config['paths'][place].keys():
+                config['paths'][place][dirname] = osp.join(
+                    config['paths'][place]['working_dirname'], 
+                    config['paths'][place][dirname]
+                )
+                config['paths'][place][dirname] = osp.abspath(config['paths'][place][dirname])
+
     def get_table_info(self, cursor: sqlite3.Cursor):
         return self.table_mngr.get_table_info(cursor)
 
@@ -119,3 +131,16 @@ class ExprMngr:
                     cmd_k = k
                 f.write(bytes(f'export {cmd_k}="{v}"\n', encoding='utf-8'))
         return conf_id
+
+    def __getattr__(self, name: str):
+        if name.endswith('_dirname'):
+            if name.startswith('remote_'):
+                place = 'remote'
+            elif name.startswith('local_'):
+                place = 'local'
+            else:
+                raise AttributeError(f"{self} has no attribute '{name}'")
+            dirname_name = name[len(place)+1:]
+            return self.config['paths'][place][dirname_name]
+        else:
+            raise AttributeError(f"{self} has no attribute '{name}'")
