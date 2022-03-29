@@ -88,9 +88,10 @@ class ExprMngr:
         return self.table_mngr.get_table_info(cursor)
 
     def get_id(self, **kwargs):
-        if not (column_names_set:=set(self.column_names)).issubset(kwargs_keys:=set(kwargs.keys())):
-            raise RuntimeError(f'kwargs_keys is not subset of column_names, differences are:\n'
-                               f'{column_names_set - kwargs_keys}')
+        if len(lacking_keys:=(set(self.column_names) - set(kwargs.keys()))) > 0:
+            raise RuntimeError(f'Lacking some keys, they are: {lacking_keys}')
+        if len(extra_keys:=(set(kwargs.keys()) - set(self.column_names))) > 0:
+            raise RuntimeError(f'Found extra_keys in kwargs of `get_id`, they are: {extra_keys}. Consider defining them in table_def.yaml.')
         conn = self.conn
         cursor = self.conn.cursor()
         try:
